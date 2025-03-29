@@ -28,10 +28,10 @@ module.exports = async (req, res) => {
     // Get feature usage
     const { data: featureUsage, error: featureError } = await supabase
       .from('analytics_events')
-      .select('properties->>feature_name as feature, count(*)')
+      .select('properties->>feature_name as feature, count(*)', { count: 'exact' })
       .eq('type', 'FEATURE_USE')
-      .not('properties->>feature_name', 'is', null)
-      .group('properties->>feature_name')
+      .is('properties->>feature_name', 'not.null')
+      .groupBy('properties->>feature_name')
       .order('count', { ascending: false });
       
     if (featureError) throw featureError;
