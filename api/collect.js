@@ -18,11 +18,15 @@ module.exports = async (req, res) => {
     return res.status(200).end();
   }
   
+  console.log('Analytics endpoint hit, method:', req.method);
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   
   try {
+    console.log('Request body:', JSON.stringify(req.body));
+    
     const { events, deviceId, appVersion, platform } = req.body;
     
     if (!events || !Array.isArray(events)) {
@@ -30,6 +34,8 @@ module.exports = async (req, res) => {
     }
     
     console.log(`Received ${events.length} events from ${deviceId || 'unknown'} (${platform || 'unknown'})`);
+    console.log('Supabase URL:', process.env.SUPABASE_URL?.substring(0, 10) + '...');
+    console.log('Supabase key present:', !!process.env.SUPABASE_SERVICE_KEY);
     
     // Process events
     let successCount = 0;
@@ -43,7 +49,8 @@ module.exports = async (req, res) => {
       
       if (isFeedback) {
         // Insert into feedback table
-        const { error } = await supabase
+        console.log('Inserting feedback event:', event.id);
+        const { data, error } = await supabase
           .from('feedback')
           .insert({
             user_id: event.userId,
@@ -59,11 +66,13 @@ module.exports = async (req, res) => {
         if (error) {
           console.error('Error storing feedback event:', error);
         } else {
+          console.log('Feedback event stored successfully:', data);
           feedbackCount++;
         }
       } else {
         // Insert into analytics_events table
-        const { error } = await supabase
+        console.log('Inserting analytics event:', event.id);
+        const { data, error } = await supabase
           .from('analytics_events')
           .insert({
             event_id: event.id,
@@ -80,15 +89,19 @@ module.exports = async (req, res) => {
         if (error) {
           console.error('Error storing analytics event:', error);
         } else {
+          console.log('Analytics event stored successfully:', data);
           successCount++;
         }
       }
     }
     
-    return res.status(200).json({ 
+    const response = { 
       success: true, 
       message: `Processed ${events.length} events (${successCount} analytics, ${feedbackCount} feedback)` 
-    });
+    };
+    
+    console.log('Sending response:', response);
+    return res.status(200).json(response);
     
   } catch (error) {
     console.error('Error processing analytics:', error);
