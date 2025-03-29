@@ -1,0 +1,17 @@
+{
+  "name": "lexie-analytics-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.3",
+    "@vercel/node": "^5.1.14",
+    "vercel": "^41.4.1"
+  }
+}
