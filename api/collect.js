@@ -45,7 +45,9 @@ module.exports = async (req, res) => {
       // Determine if this is a feedback event
       const isFeedback = 
         event.type === 'FEEDBACK_SUBMITTED' || 
-        event.type === 'CONTENT_FEEDBACK';
+        event.type === 'CONTENT_FEEDBACK' ||
+        event.type === 'feedback_submitted' ||
+        event.properties?.feedback_type;
       
       if (isFeedback) {
         // Insert into feedback table
@@ -57,6 +59,7 @@ module.exports = async (req, res) => {
             feedback_type: event.properties?.feedback_type || 'general',
             is_positive: event.properties?.is_positive,
             details: event.properties,
+            screenshot: event.properties?.screenshot,
             device_id: deviceId,
             app_version: appVersion,
             platform: platform,

@@ -27,6 +27,11 @@ module.exports = async (req, res) => {
           </span>
           <span class="feedback-date">${new Date(item.timestamp).toLocaleString()}</span>
         </div>
+        <div class="feedback-screenshot">
+          ${item.screenshot ? `
+            <img src="${item.screenshot}" alt="User provided screenshot" />
+          ` : ''}
+        </div>
         <div class="feedback-details">
           <pre>${JSON.stringify(item.details, null, 2)}</pre>
         </div>
@@ -125,6 +130,17 @@ module.exports = async (req, res) => {
               .feedback-item {
                 padding: 12px;
               }
+            }
+            .feedback-screenshot {
+              margin: 12px 0;
+              max-width: 100%;
+              overflow: hidden;
+              border-radius: 8px;
+            }
+            .feedback-screenshot img {
+              max-width: 100%;
+              max-height: 400px;
+              object-fit: contain;
             }
           </style>
         </head>
