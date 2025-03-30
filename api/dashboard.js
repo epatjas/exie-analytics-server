@@ -172,13 +172,13 @@ module.exports = async (req, res) => {
             /* Using exact color tokens from Lexie app theme */
             :root {
               --bg-color: hsl(240, 3%, 6%);          /* background */
-              --card-bg: hsl(220, 6%, 10%);            /* background02 */
+              --card-bg: hsl(0, 0%, 12%);            /* background02 */
               --card-hover: hsl(220, 6%, 10%);       /* background01 */
               --text-color: hsl(240, 100%, 97%);     /* text */
               --text-secondary: hsl(220, 1%, 58%);   /* textSecondary */
               --border-color: hsl(230, 6%, 19%);     /* stroke */
-              --highlight-blue: #98BDF7;             /* blue */
-              --highlight-yellow: hsl(51, 60%, 55%); /* yellowMedium */
+              --highlight-blue: #82B4F9;             /* blue */
+              --highlight-yellow: #C3B069;           /* Updated to the specified hex color */
               --highlight-green: hsl(156, 48%, 63%); /* mint */
               --icon-color: #4aded3;                 /* mint/teal color from screenshot */
             }
@@ -198,11 +198,17 @@ module.exports = async (req, res) => {
               padding: 0;
             }
             
+            /* Header and content alignment */
+            .header, .tabs, .content {
+              padding-left: 40px; /* Consistent left padding for alignment */
+              padding-right: 40px;
+            }
+            
             .header {
               display: flex;
               align-items: center;
-              padding: 32px;
-              /* Removed border-bottom */
+              padding-top: 20px;
+              padding-bottom: 20px;
             }
             
             .title {
@@ -211,13 +217,15 @@ module.exports = async (req, res) => {
               color: var(--text-color);
             }
             
+            /* Tab container and tabs */
             .tabs {
               display: flex;
-              padding: 0 20px;
               border-bottom: 1px solid var(--border-color);
               position: relative;
               margin-bottom: 40px;
               align-items: center;
+              padding-top: 0;
+              padding-bottom: 0;
             }
             
             .tab {
@@ -228,9 +236,10 @@ module.exports = async (req, res) => {
               cursor: pointer;
             }
             
+            /* Fix for active tab indicator */
             .tab.active {
               color: var(--text-color);
-              font-weight: 500;
+              font-weight: 400;
             }
             
             .tab.active:after {
@@ -238,7 +247,7 @@ module.exports = async (req, res) => {
               position: absolute;
               bottom: -1px;
               left: 0;
-              right: 0;
+              width: 100%; /* Match width of the tab text */
               height: 4px;
               background-color: var(--highlight-blue);
               border-radius: 4px 4px 0 0;
@@ -262,14 +271,17 @@ module.exports = async (req, res) => {
               height: 100%;
             }
             
-            .content {
-              padding: 0 20px;
-            }
-            
+            /* Section titles - maintain left alignment */
             .section-title {
               font-size: 16px;
-              font-weight: 300;
+              font-weight: 400;
               margin-bottom: 20px;
+            }
+            
+            /* Update content padding */
+            .content {
+              padding-top: 0;
+              padding-bottom: 40px;
             }
             
             .metrics-grid {
@@ -282,7 +294,7 @@ module.exports = async (req, res) => {
             .card {
               background-color: var(--card-bg);
               border-radius: 12px;
-              padding: 30px 20px;
+              padding: 40px 20px;
               display: flex;
               flex-direction: column;
               align-items: center;
@@ -290,6 +302,7 @@ module.exports = async (req, res) => {
               text-align: center;
               position: relative;
               border: 1px solid var(--border-color);
+              min-height: 220px;
             }
             
             .icon {
@@ -308,34 +321,39 @@ module.exports = async (req, res) => {
             
             .metric-value {
               font-size: 42px;
-              font-weight: 500;
+              font-weight: 400;
               margin-bottom: 5px;
             }
             
             .metric-title {
               font-size: 16px;
               color: var(--text-secondary);
-              font-weight: 300;
+              font-weight: 400;
             }
             
             /* Time metrics styling */
             .time-card {
               background-color: var(--card-bg);
               border-radius: 12px;
-              padding: 20px;
+              padding: 30px;
               text-align: left;
               border: 1px solid var(--border-color);
+              min-height: 200px;
+              display: flex;
+              flex-direction: column;
             }
             
             .time-title {
               font-size: 14px;
               color: var(--text-secondary);
-              margin-bottom: 40px;
+              margin-bottom: 50px;
+              font-weight: 400;
             }
             
             .time-value {
               font-size: 42px;
-              font-weight: 500;
+              font-weight: 400;
+              margin-top: auto;
             }
             
             .time-unit {
@@ -348,6 +366,7 @@ module.exports = async (req, res) => {
             /* Chart specific styling */
             .bar-chart-container {
               grid-column: span 3;
+              min-height: 300px;
             }
             
             .chart-title {
@@ -360,7 +379,7 @@ module.exports = async (req, res) => {
               display: flex;
               justify-content: space-between;
               align-items: flex-end;
-              height: 100px;
+              height: 150px;
               margin-top: 40px;
             }
             
