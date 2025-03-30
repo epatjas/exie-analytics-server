@@ -158,59 +158,30 @@ module.exports = async (req, res) => {
     const avgQuizDuration = quizCount > 0 ? quizDuration / quizCount : 0;
     const avgFlashcardDuration = flashcardCount > 0 ? flashcardDuration / flashcardCount : 0;
     
-    // Return dashboard HTML with key metrics prominently displayed
+    // Return dashboard HTML with updated color tokens
     return res.status(200).send(`
       <!DOCTYPE html>
       <html>
         <head>
           <title>Lexie analytics dashboard</title>
           <meta name="viewport" content="width=device-width, initial-scale=1">
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
           <style>
-            /* Import Geist font locally */
-            @font-face {
-              font-family: 'Geist';
-              src: url('/fonts/Geist-Regular.woff2') format('woff2');
-              font-weight: 400;
-              font-style: normal;
-              font-display: swap;
-            }
-            
-            @font-face {
-              font-family: 'Geist';
-              src: url('/fonts/Geist-Medium.woff2') format('woff2');
-              font-weight: 500;
-              font-style: normal;
-              font-display: swap;
-            }
-            
-            @font-face {
-              font-family: 'Geist';
-              src: url('/fonts/Geist-SemiBold.woff2') format('woff2');
-              font-weight: 600;
-              font-style: normal;
-              font-display: swap;
-            }
-            
-            @font-face {
-              font-family: 'Geist';
-              src: url('/fonts/Geist-Bold.woff2') format('woff2');
-              font-weight: 700;
-              font-style: normal;
-              font-display: swap;
-            }
-            
-            /* Dark theme colors from screenshot */
+            /* Using exact color tokens from Lexie app theme */
             :root {
-              --bg-color: #121212;
-              --card-bg: #1E1E1E;
-              --text-color: #FFFFFF;
-              --text-secondary: rgba(255, 255, 255, 0.7);
-              --border-color: #333333;
-              --highlight-blue: #4299e1;
-              --highlight-yellow: #D6B656;
-              --highlight-green: #82CCBC;
-              --tab-active-color: #4299e1;
-              --tab-inactive-color: #555555;
+              --bg-color: hsl(240, 3%, 6%);          /* background */
+              --card-bg: hsl(0, 0%, 12%);            /* background02 */
+              --card-hover: hsl(220, 6%, 10%);       /* background01 */
+              --text-color: hsl(240, 100%, 97%);     /* text */
+              --text-secondary: hsl(220, 1%, 58%);   /* textSecondary */
+              --border-color: hsl(230, 6%, 19%);     /* stroke */
+              --highlight-blue: #82B4F9;             /* blue */
+              --highlight-yellow: hsl(51, 60%, 55%); /* yellowMedium */
+              --highlight-green: hsl(156, 48%, 63%); /* mint */
+              --tab-active-color: #82B4F9;           /* blue */
+              --tab-inactive-color: hsl(220, 1%, 58%); /* textSecondary */
               --header-height: 60px;
             }
             
@@ -221,7 +192,7 @@ module.exports = async (req, res) => {
             }
             
             body { 
-              font-family: 'Geist', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+              font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
               background-color: var(--bg-color);
               color: var(--text-color);
               max-width: 1200px; 
@@ -421,8 +392,10 @@ module.exports = async (req, res) => {
             <div class="metrics-grid">
               <div class="card">
                 <div class="icon">
-                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor"/>
+                  <!-- Lucide User Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
                   </svg>
                 </div>
                 <div class="metric-title">All time users</div>
@@ -431,8 +404,12 @@ module.exports = async (req, res) => {
               
               <div class="card">
                 <div class="icon">
-                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+                  <!-- Lucide RefreshCw Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 2v6h6"></path>
+                    <path d="M21 12A9 9 0 0 0 6 5.3L3 8"></path>
+                    <path d="M21 22v-6h-6"></path>
+                    <path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"></path>
                   </svg>
                 </div>
                 <div class="metric-title">Weekly return rate</div>
@@ -441,8 +418,10 @@ module.exports = async (req, res) => {
               
               <div class="card">
                 <div class="icon">
-                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V4C20 2.9 19.1 2 18 2ZM9 4H11V9L10 8.25L9 9V4ZM18 20H6V4H7V13L10 10.75L13 13V4H18V20Z" fill="currentColor"/>
+                  <!-- Lucide BookOpen Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                   </svg>
                 </div>
                 <div class="metric-title">Study sets per user</div>
@@ -453,24 +432,57 @@ module.exports = async (req, res) => {
             <div class="section-title">Activity metrics</div>
             <div class="metrics-grid">
               <div class="card">
+                <div class="icon">
+                  <!-- Lucide FileText Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                </div>
                 <div class="metric-title">Time spent with study set</div>
                 <div class="metric-value">${(avgStudySetDuration / 60).toFixed(1)}<span class="metric-unit"> min</span></div>
                 <div class="metric-description">Average time per study set (${studySetCount} sessions)</div>
               </div>
               
               <div class="card">
+                <div class="icon">
+                  <!-- Lucide CheckSquare Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 11 12 14 22 4"></polyline>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                  </svg>
+                </div>
                 <div class="metric-title">Time spent with quiz</div>
                 <div class="metric-value">${(avgQuizDuration / 60).toFixed(1)}<span class="metric-unit"> min</span></div>
                 <div class="metric-description">Average time per quiz (${quizCount} sessions)</div>
               </div>
               
               <div class="card">
+                <div class="icon">
+                  <!-- Lucide Layers Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                  </svg>
+                </div>
                 <div class="metric-title">Time spent with flashcard</div>
                 <div class="metric-value">${(avgFlashcardDuration / 60).toFixed(1)}<span class="metric-unit"> min</span></div>
                 <div class="metric-description">Average time per flashcard set (${flashcardCount} sessions)</div>
               </div>
               
               <div class="card big-card">
+                <div class="icon">
+                  <!-- Lucide BarChart2 Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                  </svg>
+                </div>
                 <div class="metric-title">Time spent comparison</div>
                 <div class="bar-container">
                   <div class="bar-group">
