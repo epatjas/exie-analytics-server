@@ -172,7 +172,7 @@ module.exports = async (req, res) => {
             /* Using exact color tokens from Lexie app theme */
             :root {
               --bg-color: hsl(240, 3%, 6%);          /* background */
-              --card-bg: hsl(0, 0%, 12%);            /* background02 */
+              --card-bg: hsl(220, 6%, 10%);            /* background02 */
               --card-hover: hsl(220, 6%, 10%);       /* background01 */
               --text-color: hsl(240, 100%, 97%);     /* text */
               --text-secondary: hsl(220, 1%, 58%);   /* textSecondary */
@@ -261,7 +261,7 @@ module.exports = async (req, res) => {
             .updated-at {
               margin-left: auto;
               font-size: 12px;
-              color: var(--text-secondary);
+              color: var(--highlight-blue);
               margin-top: 0;
               margin-bottom: 0;
               padding-top: 0;
