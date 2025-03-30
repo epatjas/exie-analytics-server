@@ -335,7 +335,7 @@ module.exports = async (req, res) => {
             <span>Last updated: ${new Date().toLocaleString()}</span>
           </div>
           
-          <div class="key-metrics-title">INITIAL TESTING RESULTS AND KEY METRICS</div>
+          <div class="key-metrics-title">Key Metrics</div>
           <div class="hero-metrics">
             <div class="hero-metric">
               <div class="hero-value">${weeklyRetentionRate.toFixed(0)}%</div>
@@ -348,12 +348,12 @@ module.exports = async (req, res) => {
             </div>
             
             <div class="hero-metric">
-              <div class="hero-value">${(avgStudySessionDuration / 60).toFixed(0)}</div>
-              <div class="hero-label">minute<br>Time spent per study session</div>
+              <div class="hero-value">${uniqueUserCount || 0}</div>
+              <div class="hero-label">distinct users</div>
             </div>
           </div>
           
-          <h2>Detailed Activity Metrics</h2>
+          <h2>Detailed activity metrics</h2>
           <div class="dashboard">
             <div class="card">
               <h2>Study Set Time</h2>
@@ -375,7 +375,7 @@ module.exports = async (req, res) => {
           </div>
           
           <div class="card" style="grid-column: span 3;">
-            <h2>Time Spent Comparison</h2>
+            <h2>Time spent comparison</h2>
             <div class="bar-chart">
               <div class="bar" style="height: ${Math.min(100, (avgStudySetDuration / 60) * 10)}%;">
                 <div class="bar-value">${(avgStudySetDuration / 60).toFixed(1)}m</div>
@@ -389,21 +389,6 @@ module.exports = async (req, res) => {
                 <div class="bar-value">${(avgFlashcardDuration / 60).toFixed(1)}m</div>
                 <div class="bar-label">Flashcards</div>
               </div>
-            </div>
-          </div>
-          
-          <h2>Additional Analytics</h2>
-          <div class="dashboard">
-            <div class="card">
-              <h2>Total Events</h2>
-              <div class="metric">${totalEvents || 0}</div>
-              <div class="metric-description">Total analytics events tracked</div>
-            </div>
-            
-            <div class="card">
-              <h2>Unique Users</h2>
-              <div class="metric">${uniqueUserCount || 0}</div>
-              <div class="metric-description">Distinct users identified</div>
             </div>
           </div>
         </body>
