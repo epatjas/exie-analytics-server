@@ -107,7 +107,7 @@ module.exports = async (req, res) => {
       ? totalStudySets / uniqueUserCount 
       : 0;
     
-    // Get average session duration for all study activities
+    // Get session data for all study activities (keeping your existing combined metrics)
     const { data: studySessionData, error: studySessionError } = await supabase
       .from('analytics_events')
       .select('properties')
@@ -117,23 +117,46 @@ module.exports = async (req, res) => {
     if (studySessionError) throw studySessionError;
     console.log('Study session duration query completed');
 
-    // Calculate average study session duration
+    // Calculate combined average study session duration
     let totalStudyDuration = 0;
     let studySessionCount = 0;
+
+    // Add variables for separate tracking
+    let studySetDuration = 0;
+    let studySetCount = 0;
+    let quizDuration = 0;
+    let quizCount = 0;
+    let flashcardDuration = 0;
+    let flashcardCount = 0;
 
     studySessionData.forEach(event => {
       if (event.properties?.duration_seconds) {
         const duration = parseFloat(event.properties.duration_seconds);
         if (!isNaN(duration)) {
+          // Add to total for combined metric
           totalStudyDuration += duration;
           studySessionCount++;
+          
+          // Add to context-specific totals
+          if (event.properties.context === 'study_set') {
+            studySetDuration += duration;
+            studySetCount++;
+          } else if (event.properties.context === 'quiz') {
+            quizDuration += duration;
+            quizCount++;
+          } else if (event.properties.context === 'flashcards') {
+            flashcardDuration += duration;
+            flashcardCount++;
+          }
         }
       }
     });
 
-    const avgStudySessionDuration = studySessionCount > 0 
-      ? totalStudyDuration / studySessionCount 
-      : 0;
+    // Calculate averages for each context
+    const avgStudySessionDuration = studySessionCount > 0 ? totalStudyDuration / studySessionCount : 0;
+    const avgStudySetDuration = studySetCount > 0 ? studySetDuration / studySetCount : 0;
+    const avgQuizDuration = quizCount > 0 ? quizDuration / quizCount : 0;
+    const avgFlashcardDuration = flashcardCount > 0 ? flashcardDuration / flashcardCount : 0;
     
     // Get average session duration
     const { data: sessionData, error: sessionError } = await supabase
@@ -271,6 +294,38 @@ module.exports = async (req, res) => {
                 font-size: 42px;
               }
             }
+            .bar-chart {
+              display: flex;
+              align-items: flex-end;
+              height: 150px;
+              margin: 20px 0;
+              gap: 20px;
+            }
+            .bar {
+              flex: 1;
+              background-color: #4299e1;
+              min-width: 40px;
+              border-radius: 4px 4px 0 0;
+              position: relative;
+              transition: height 0.3s;
+            }
+            .bar-label {
+              position: absolute;
+              bottom: -25px;
+              left: 0;
+              right: 0;
+              text-align: center;
+              font-size: 14px;
+              color: #718096;
+            }
+            .bar-value {
+              position: absolute;
+              top: -25px;
+              left: 0;
+              right: 0;
+              text-align: center;
+              font-weight: bold;
+            }
           </style>
         </head>
         <body>
@@ -295,6 +350,45 @@ module.exports = async (req, res) => {
             <div class="hero-metric">
               <div class="hero-value">${(avgStudySessionDuration / 60).toFixed(0)}</div>
               <div class="hero-label">minute<br>Time spent per study session</div>
+            </div>
+          </div>
+          
+          <h2>Detailed Activity Metrics</h2>
+          <div class="dashboard">
+            <div class="card">
+              <h2>Study Set Time</h2>
+              <div class="metric">${(avgStudySetDuration / 60).toFixed(1)} min</div>
+              <div class="metric-description">Average time per study set (${studySetCount} sessions)</div>
+            </div>
+            
+            <div class="card">
+              <h2>Quiz Time</h2>
+              <div class="metric">${(avgQuizDuration / 60).toFixed(1)} min</div>
+              <div class="metric-description">Average time per quiz (${quizCount} sessions)</div>
+            </div>
+            
+            <div class="card">
+              <h2>Flashcard Time</h2>
+              <div class="metric">${(avgFlashcardDuration / 60).toFixed(1)} min</div>
+              <div class="metric-description">Average time per flashcard set (${flashcardCount} sessions)</div>
+            </div>
+          </div>
+          
+          <div class="card" style="grid-column: span 3;">
+            <h2>Time Spent Comparison</h2>
+            <div class="bar-chart">
+              <div class="bar" style="height: ${Math.min(100, (avgStudySetDuration / 60) * 10)}%;">
+                <div class="bar-value">${(avgStudySetDuration / 60).toFixed(1)}m</div>
+                <div class="bar-label">Study Sets</div>
+              </div>
+              <div class="bar" style="height: ${Math.min(100, (avgQuizDuration / 60) * 10)}%;">
+                <div class="bar-value">${(avgQuizDuration / 60).toFixed(1)}m</div>
+                <div class="bar-label">Quizzes</div>
+              </div>
+              <div class="bar" style="height: ${Math.min(100, (avgFlashcardDuration / 60) * 10)}%;">
+                <div class="bar-value">${(avgFlashcardDuration / 60).toFixed(1)}m</div>
+                <div class="bar-label">Flashcards</div>
+              </div>
             </div>
           </div>
           
