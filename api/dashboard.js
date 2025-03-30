@@ -107,6 +107,34 @@ module.exports = async (req, res) => {
       ? totalStudySets / uniqueUserCount 
       : 0;
     
+    // Get average session duration for study sets specifically
+    const { data: studySessionData, error: studySessionError } = await supabase
+      .from('analytics_events')
+      .select('properties')
+      .eq('type', 'session_end')
+      .eq('properties->>context', 'study_set');
+      
+    if (studySessionError) throw studySessionError;
+    console.log('Study session duration query completed');
+
+    // Calculate average study session duration
+    let totalStudyDuration = 0;
+    let studySessionCount = 0;
+
+    studySessionData.forEach(event => {
+      if (event.properties?.duration_seconds) {
+        const duration = parseFloat(event.properties.duration_seconds);
+        if (!isNaN(duration)) {
+          totalStudyDuration += duration;
+          studySessionCount++;
+        }
+      }
+    });
+
+    const avgStudySessionDuration = studySessionCount > 0 
+      ? totalStudyDuration / studySessionCount 
+      : 0;
+    
     // Get average session duration
     const { data: sessionData, error: sessionError } = await supabase
       .from('analytics_events')
@@ -265,7 +293,7 @@ module.exports = async (req, res) => {
             </div>
             
             <div class="hero-metric">
-              <div class="hero-value">${(avgSessionDuration / 60).toFixed(0)}</div>
+              <div class="hero-value">${(avgStudySessionDuration / 60).toFixed(0)}</div>
               <div class="hero-label">minute<br>Time spent per study session</div>
             </div>
           </div>
