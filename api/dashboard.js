@@ -158,7 +158,7 @@ module.exports = async (req, res) => {
     const avgQuizDuration = quizCount > 0 ? quizDuration / quizCount : 0;
     const avgFlashcardDuration = flashcardCount > 0 ? flashcardDuration / flashcardCount : 0;
     
-    // Return dashboard HTML with updated color tokens
+    // Return the complete dashboard with all metrics sections
     return res.status(200).send(`
       <!DOCTYPE html>
       <html>
@@ -172,12 +172,12 @@ module.exports = async (req, res) => {
             /* Using exact color tokens from Lexie app theme */
             :root {
               --bg-color: hsl(240, 3%, 6%);          /* background */
-              --card-bg: hsl(0, 0%, 12%);            /* background02 */
+              --card-bg: hsl(220, 6%, 10%);            /* background02 */
               --card-hover: hsl(220, 6%, 10%);       /* background01 */
               --text-color: hsl(240, 100%, 97%);     /* text */
               --text-secondary: hsl(220, 1%, 58%);   /* textSecondary */
               --border-color: hsl(230, 6%, 19%);     /* stroke */
-              --highlight-blue: #82B4F9;             /* blue */
+              --highlight-blue: #98BDF7;             /* blue */
               --highlight-yellow: hsl(51, 60%, 55%); /* yellowMedium */
               --highlight-green: hsl(156, 48%, 63%); /* mint */
               --icon-color: #4aded3;                 /* mint/teal color from screenshot */
@@ -201,12 +201,12 @@ module.exports = async (req, res) => {
             .header {
               display: flex;
               align-items: center;
-              padding: 20px;
+              padding: 32px;
               /* Removed border-bottom */
             }
             
             .title {
-              font-size: 18px;
+              font-size: 20px;
               font-weight: 400;
               color: var(--text-color);
             }
@@ -217,6 +217,7 @@ module.exports = async (req, res) => {
               border-bottom: 1px solid var(--border-color);
               position: relative;
               margin-bottom: 40px;
+              align-items: center;
             }
             
             .tab {
@@ -252,6 +253,13 @@ module.exports = async (req, res) => {
               margin-left: auto;
               font-size: 12px;
               color: var(--text-secondary);
+              margin-top: 0;
+              margin-bottom: 0;
+              padding-top: 0;
+              padding-bottom: 0;
+              display: flex;
+              align-items: center;
+              height: 100%;
             }
             
             .content {
@@ -260,7 +268,7 @@ module.exports = async (req, res) => {
             
             .section-title {
               font-size: 16px;
-              font-weight: 500;
+              font-weight: 300;
               margin-bottom: 20px;
             }
             
@@ -281,6 +289,7 @@ module.exports = async (req, res) => {
               justify-content: center;
               text-align: center;
               position: relative;
+              border: 1px solid var(--border-color);
             }
             
             .icon {
@@ -299,14 +308,96 @@ module.exports = async (req, res) => {
             
             .metric-value {
               font-size: 42px;
-              font-weight: 700;
+              font-weight: 500;
               margin-bottom: 5px;
             }
             
             .metric-title {
               font-size: 16px;
               color: var(--text-secondary);
-              font-weight: 400;
+              font-weight: 300;
+            }
+            
+            /* Time metrics styling */
+            .time-card {
+              background-color: var(--card-bg);
+              border-radius: 12px;
+              padding: 20px;
+              text-align: left;
+              border: 1px solid var(--border-color);
+            }
+            
+            .time-title {
+              font-size: 14px;
+              color: var(--text-secondary);
+              margin-bottom: 40px;
+            }
+            
+            .time-value {
+              font-size: 42px;
+              font-weight: 500;
+            }
+            
+            .time-unit {
+              font-size: 20px;
+              font-weight: 500;
+              color: var(--text-secondary);
+              margin-left: 5px;
+            }
+            
+            /* Chart specific styling */
+            .bar-chart-container {
+              grid-column: span 3;
+            }
+            
+            .chart-title {
+              margin-bottom: 20px;
+              font-size: 14px;
+              color: var(--text-secondary);
+            }
+            
+            .bar-chart {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-end;
+              height: 100px;
+              margin-top: 40px;
+            }
+            
+            .bar-group {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              width: 30%;
+            }
+            
+            .bar-value {
+              margin-bottom: 10px;
+              font-size: 14px;
+              color: var(--text-secondary);
+            }
+            
+            .bar {
+              width: 100%;
+              border-radius: 4px 4px 0 0;
+            }
+            
+            .bar-study {
+              background-color: var(--highlight-blue);
+            }
+            
+            .bar-quiz {
+              background-color: var(--highlight-yellow);
+            }
+            
+            .bar-flashcard {
+              background-color: var(--highlight-green);
+            }
+            
+            .bar-label {
+              margin-top: 10px;
+              font-size: 14px;
+              color: var(--text-secondary);
             }
           </style>
         </head>
@@ -357,6 +448,45 @@ module.exports = async (req, res) => {
                 </div>
                 <div class="metric-value">${studySetsPerUser.toFixed(1)}</div>
                 <div class="metric-title">Study sets per user</div>
+              </div>
+            </div>
+            
+            <div class="section-title">Activity metrics</div>
+            <div class="metrics-grid">
+              <div class="time-card">
+                <div class="time-title">Time spent with study set</div>
+                <div class="time-value">${(avgStudySetDuration / 60).toFixed(1)}<span class="time-unit">min</span></div>
+              </div>
+              
+              <div class="time-card">
+                <div class="time-title">Time spent with quiz</div>
+                <div class="time-value">${(avgQuizDuration / 60).toFixed(1)}<span class="time-unit">min</span></div>
+              </div>
+              
+              <div class="time-card">
+                <div class="time-title">Time spent with flashcard</div>
+                <div class="time-value">${(avgFlashcardDuration / 60).toFixed(1)}<span class="time-unit">min</span></div>
+              </div>
+              
+              <div class="time-card bar-chart-container">
+                <div class="chart-title">Time spent comparison</div>
+                <div class="bar-chart">
+                  <div class="bar-group">
+                    <div class="bar-value">${(avgStudySetDuration / 60).toFixed(1)}</div>
+                    <div class="bar bar-study" style="height: ${Math.min(100, Math.max(5, (avgStudySetDuration / 60) * 20))}px;"></div>
+                    <div class="bar-label">Study set</div>
+                  </div>
+                  <div class="bar-group">
+                    <div class="bar-value">${(avgQuizDuration / 60).toFixed(1)}</div>
+                    <div class="bar bar-quiz" style="height: ${Math.min(100, Math.max(5, (avgQuizDuration / 60) * 20))}px;"></div>
+                    <div class="bar-label">Quizzes</div>
+                  </div>
+                  <div class="bar-group">
+                    <div class="bar-value">${(avgFlashcardDuration / 60).toFixed(1)}</div>
+                    <div class="bar bar-flashcard" style="height: ${Math.min(100, Math.max(5, (avgFlashcardDuration / 60) * 20))}px;"></div>
+                    <div class="bar-label">Flashcards</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
