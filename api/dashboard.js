@@ -86,7 +86,7 @@ module.exports = async (req, res) => {
     const { data: studySetData, error: studySetError } = await supabase
       .from('analytics_events')
       .select('user_id')
-      .eq('type', 'STUDY_SET_CREATED');
+      .eq('type', 'study_set_created');
       
     if (studySetError) throw studySetError;
     console.log('Study sets query completed');
