@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
       .select('properties->>feature_name as feature, count(*)', { count: 'exact' })
       .eq('type', 'FEATURE_USE')
       .is('properties->>feature_name', 'not.null')
-      .groupBy('properties->>feature_name')
+      .group('properties->>feature_name')
       .order('count', { ascending: false });
       
     if (featureError) throw featureError;
