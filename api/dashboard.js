@@ -107,12 +107,12 @@ module.exports = async (req, res) => {
       ? totalStudySets / uniqueUserCount 
       : 0;
     
-    // Get average session duration for study sets specifically
+    // Get average session duration for all study activities
     const { data: studySessionData, error: studySessionError } = await supabase
       .from('analytics_events')
       .select('properties')
       .eq('type', 'session_end')
-      .eq('properties->>context', 'study_set');
+      .or('properties->>context.eq.study_set,properties->>context.eq.quiz,properties->>context.eq.flashcards');
       
     if (studySessionError) throw studySessionError;
     console.log('Study session duration query completed');
