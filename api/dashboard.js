@@ -180,9 +180,7 @@ module.exports = async (req, res) => {
               --highlight-blue: #82B4F9;             /* blue */
               --highlight-yellow: hsl(51, 60%, 55%); /* yellowMedium */
               --highlight-green: hsl(156, 48%, 63%); /* mint */
-              --tab-active-color: #82B4F9;           /* blue */
-              --tab-inactive-color: hsl(220, 1%, 58%); /* textSecondary */
-              --header-height: 60px;
+              --icon-color: #4aded3;                 /* mint/teal color from screenshot */
             }
             
             * {
@@ -201,23 +199,24 @@ module.exports = async (req, res) => {
             }
             
             .header {
-              height: var(--header-height);
               display: flex;
               align-items: center;
-              padding: 0 20px;
-              border-bottom: 1px solid var(--border-color);
+              padding: 20px;
+              /* Removed border-bottom */
             }
             
             .title {
               font-size: 18px;
-              font-weight: 500;
-              flex: 1;
+              font-weight: 400;
+              color: var(--text-color);
             }
             
-            .tab-container {
+            .tabs {
               display: flex;
               padding: 0 20px;
               border-bottom: 1px solid var(--border-color);
+              position: relative;
+              margin-bottom: 40px;
             }
             
             .tab {
@@ -239,48 +238,63 @@ module.exports = async (req, res) => {
               bottom: -1px;
               left: 0;
               right: 0;
-              height: 2px;
-              background-color: var(--tab-active-color);
+              height: 4px;
+              background-color: var(--highlight-blue);
+              border-radius: 4px 4px 0 0;
             }
             
             .tab:not(.active) {
               color: var(--text-secondary);
+              font-weight: 400;
+            }
+            
+            .updated-at {
+              margin-left: auto;
+              font-size: 12px;
+              color: var(--text-secondary);
             }
             
             .content {
-              padding: 20px;
+              padding: 0 20px;
             }
             
             .section-title {
               font-size: 16px;
               font-weight: 500;
-              margin: 20px 0 15px 0;
+              margin-bottom: 20px;
             }
             
             .metrics-grid {
               display: grid;
-              grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+              grid-template-columns: repeat(3, 1fr);
               gap: 20px;
-              margin-bottom: 20px;
+              margin-bottom: 40px;
             }
             
             .card {
               background-color: var(--card-bg);
               border-radius: 12px;
-              padding: 20px;
+              padding: 30px 20px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              text-align: center;
               position: relative;
-              overflow: hidden;
             }
             
-            .big-card {
-              grid-column: 1 / -1;
+            .icon {
+              margin-bottom: 15px;
             }
             
-            .metric-title {
-              font-size: 14px;
-              color: var(--text-secondary);
-              margin-bottom: 30px;
-              margin-top: 10px;
+            .icon svg {
+              width: 24px;
+              height: 24px;
+              stroke: var(--icon-color);
+              stroke-width: 2;
+              stroke-linecap: round;
+              stroke-linejoin: round;
+              fill: none;
             }
             
             .metric-value {
@@ -289,90 +303,10 @@ module.exports = async (req, res) => {
               margin-bottom: 5px;
             }
             
-            .metric-unit {
-              font-size: 14px;
+            .metric-title {
+              font-size: 16px;
+              color: var(--text-secondary);
               font-weight: 400;
-              color: var(--text-secondary);
-            }
-            
-            .metric-description {
-              font-size: 14px;
-              color: var(--text-secondary);
-              margin-top: 5px;
-            }
-            
-            .icon {
-              position: absolute;
-              top: 20px;
-              right: 20px;
-              width: 24px;
-              height: 24px;
-              opacity: 0.5;
-            }
-            
-            .bar-container {
-              display: flex;
-              align-items: flex-end;
-              height: 140px;
-              gap: 40px;
-              margin-top: 30px;
-              padding: 0 40px;
-            }
-            
-            .bar-group {
-              flex: 1;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-            }
-            
-            .bar {
-              width: 100%;
-              border-radius: 4px 4px 0 0;
-              margin-bottom: 10px;
-            }
-            
-            .bar-study {
-              background-color: var(--highlight-blue);
-            }
-            
-            .bar-quiz {
-              background-color: var(--highlight-yellow);
-            }
-            
-            .bar-flashcard {
-              background-color: var(--highlight-green);
-            }
-            
-            .bar-value {
-              font-size: 14px;
-              color: var(--text-secondary);
-              margin-bottom: 5px;
-            }
-            
-            .bar-label {
-              font-size: 14px;
-              color: var(--text-secondary);
-            }
-            
-            .updated-at {
-              text-align: right;
-              font-size: 12px;
-              color: var(--text-secondary);
-              margin-top: 10px;
-              padding-right: 20px;
-            }
-            
-            .user-icon {
-              color: var(--text-color);
-              font-size: 24px;
-            }
-            
-            /* Icons using SVG */
-            .icon svg {
-              width: 24px;
-              height: 24px;
-              fill: var(--text-secondary);
             }
           </style>
         </head>
@@ -381,7 +315,7 @@ module.exports = async (req, res) => {
             <div class="title">Lexie analytics dashboard</div>
           </div>
           
-          <div class="tab-container">
+          <div class="tabs">
             <div class="tab active">Metrics</div>
             <a href="/feedback" style="text-decoration:none;"><div class="tab">Feedback</div></a>
             <div class="updated-at">Last updated: ${new Date().toLocaleString()}</div>
@@ -392,19 +326,17 @@ module.exports = async (req, res) => {
             <div class="metrics-grid">
               <div class="card">
                 <div class="icon">
-                  <!-- Lucide User Icon -->
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
                 </div>
-                <div class="metric-title">All time users</div>
                 <div class="metric-value">${uniqueUserCount || 0}</div>
+                <div class="metric-title">All time users</div>
               </div>
               
               <div class="card">
                 <div class="icon">
-                  <!-- Lucide RefreshCw Icon -->
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 2v6h6"></path>
                     <path d="M21 12A9 9 0 0 0 6 5.3L3 8"></path>
@@ -412,95 +344,19 @@ module.exports = async (req, res) => {
                     <path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"></path>
                   </svg>
                 </div>
-                <div class="metric-title">Weekly return rate</div>
                 <div class="metric-value">${weeklyRetentionRate.toFixed(0)}%</div>
+                <div class="metric-title">Weekly return rate</div>
               </div>
               
               <div class="card">
                 <div class="icon">
-                  <!-- Lucide BookOpen Icon -->
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                     <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                   </svg>
                 </div>
-                <div class="metric-title">Study sets per user</div>
                 <div class="metric-value">${studySetsPerUser.toFixed(1)}</div>
-              </div>
-            </div>
-            
-            <div class="section-title">Activity metrics</div>
-            <div class="metrics-grid">
-              <div class="card">
-                <div class="icon">
-                  <!-- Lucide FileText Icon -->
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                    <polyline points="10 9 9 9 8 9"></polyline>
-                  </svg>
-                </div>
-                <div class="metric-title">Time spent with study set</div>
-                <div class="metric-value">${(avgStudySetDuration / 60).toFixed(1)}<span class="metric-unit"> min</span></div>
-                <div class="metric-description">Average time per study set (${studySetCount} sessions)</div>
-              </div>
-              
-              <div class="card">
-                <div class="icon">
-                  <!-- Lucide CheckSquare Icon -->
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 11 12 14 22 4"></polyline>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                  </svg>
-                </div>
-                <div class="metric-title">Time spent with quiz</div>
-                <div class="metric-value">${(avgQuizDuration / 60).toFixed(1)}<span class="metric-unit"> min</span></div>
-                <div class="metric-description">Average time per quiz (${quizCount} sessions)</div>
-              </div>
-              
-              <div class="card">
-                <div class="icon">
-                  <!-- Lucide Layers Icon -->
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                    <polyline points="2 17 12 22 22 17"></polyline>
-                    <polyline points="2 12 12 17 22 12"></polyline>
-                  </svg>
-                </div>
-                <div class="metric-title">Time spent with flashcard</div>
-                <div class="metric-value">${(avgFlashcardDuration / 60).toFixed(1)}<span class="metric-unit"> min</span></div>
-                <div class="metric-description">Average time per flashcard set (${flashcardCount} sessions)</div>
-              </div>
-              
-              <div class="card big-card">
-                <div class="icon">
-                  <!-- Lucide BarChart2 Icon -->
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10"></line>
-                    <line x1="12" y1="20" x2="12" y2="4"></line>
-                    <line x1="6" y1="20" x2="6" y2="14"></line>
-                  </svg>
-                </div>
-                <div class="metric-title">Time spent comparison</div>
-                <div class="bar-container">
-                  <div class="bar-group">
-                    <div class="bar-value">${(avgStudySetDuration / 60).toFixed(1)}</div>
-                    <div class="bar bar-study" style="height: ${Math.min(100, Math.max(5, (avgStudySetDuration / 60) * 20))}px;"></div>
-                    <div class="bar-label">Study set</div>
-                  </div>
-                  <div class="bar-group">
-                    <div class="bar-value">${(avgQuizDuration / 60).toFixed(1)}</div>
-                    <div class="bar bar-quiz" style="height: ${Math.min(100, Math.max(5, (avgQuizDuration / 60) * 20))}px;"></div>
-                    <div class="bar-label">Quizzes</div>
-                  </div>
-                  <div class="bar-group">
-                    <div class="bar-value">${(avgFlashcardDuration / 60).toFixed(1)}</div>
-                    <div class="bar bar-flashcard" style="height: ${Math.min(100, Math.max(5, (avgFlashcardDuration / 60) * 20))}px;"></div>
-                    <div class="bar-label">Flashcards</div>
-                  </div>
-                </div>
+                <div class="metric-title">Study sets per user</div>
               </div>
             </div>
           </div>
