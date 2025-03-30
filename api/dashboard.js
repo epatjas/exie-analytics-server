@@ -66,6 +66,129 @@ module.exports = async (req, res) => {
     
     const uniqueDeviceCount = new Set(devices?.map(d => d.device_id) || []).size;
     
+    // Get weekly retention rate
+    const { data: weeklyData, error: weeklyError } = await supabase
+      .from('analytics_events')
+      .select('properties, user_id')
+      .eq('type', 'ACTIVE_WEEK')
+      .order('timestamp', { ascending: true });
+      
+    if (weeklyError) throw weeklyError;
+    
+    // Process weekly data to calculate retention
+    const userWeeks = new Map();
+    weeklyData.forEach(event => {
+      if (event.user_id && event.properties?.week_key) {
+        if (!userWeeks.has(event.user_id)) {
+          userWeeks.set(event.user_id, new Set());
+        }
+        userWeeks.get(event.user_id).add(event.properties.week_key);
+      }
+    });
+    
+    // Calculate users with consecutive weeks
+    let usersWithConsecutiveWeeks = 0;
+    let totalUsersWithMultipleWeeks = 0;
+    
+    userWeeks.forEach(weeks => {
+      if (weeks.size > 1) {
+        totalUsersWithMultipleWeeks++;
+        
+        // Convert to array and sort
+        const sortedWeeks = Array.from(weeks).sort();
+        
+        // Check for consecutive weeks
+        let hasConsecutive = false;
+        for (let i = 1; i < sortedWeeks.length; i++) {
+          // Simple check - if any consecutive weeks exist, count this user
+          if (sortedWeeks[i].startsWith(sortedWeeks[i-1].split('-')[0]) && 
+              parseInt(sortedWeeks[i].split('-')[1]) === parseInt(sortedWeeks[i-1].split('-')[1]) + 1) {
+            hasConsecutive = true;
+            break;
+          }
+        }
+        
+        if (hasConsecutive) {
+          usersWithConsecutiveWeeks++;
+        }
+      }
+    });
+    
+    const weeklyRetentionRate = totalUsersWithMultipleWeeks > 0 
+      ? (usersWithConsecutiveWeeks / totalUsersWithMultipleWeeks) * 100 
+      : 0;
+    
+    // Get study sets per active user
+    const { data: studySetData, error: studySetError } = await supabase
+      .from('analytics_events')
+      .select('user_id')
+      .eq('type', 'STUDY_SET_CREATED');
+      
+    if (studySetError) throw studySetError;
+    
+    // Count study sets per user
+    const studySetsByUser = new Map();
+    studySetData.forEach(event => {
+      if (event.user_id) {
+        studySetsByUser.set(
+          event.user_id, 
+          (studySetsByUser.get(event.user_id) || 0) + 1
+        );
+      }
+    });
+    
+    const totalStudySets = studySetData.length;
+    const studySetsPerUser = uniqueUserCount > 0 
+      ? totalStudySets / uniqueUserCount 
+      : 0;
+    
+    // Get average session duration
+    const { data: sessionData, error: sessionError } = await supabase
+      .from('analytics_events')
+      .select('properties, user_id')
+      .eq('type', 'SESSION_END');
+      
+    if (sessionError) throw sessionError;
+    
+    // Calculate average session duration overall and per user
+    let totalDuration = 0;
+    let sessionCount = 0;
+    const userSessions = new Map();
+    
+    sessionData.forEach(event => {
+      if (event.properties?.duration_seconds) {
+        const duration = parseFloat(event.properties.duration_seconds);
+        if (!isNaN(duration)) {
+          totalDuration += duration;
+          sessionCount++;
+          
+          if (event.user_id) {
+            if (!userSessions.has(event.user_id)) {
+              userSessions.set(event.user_id, []);
+            }
+            userSessions.get(event.user_id).push(duration);
+          }
+        }
+      }
+    });
+    
+    const avgSessionDuration = sessionCount > 0 
+      ? totalDuration / sessionCount 
+      : 0;
+    
+    // Calculate top 5 users by average session duration
+    const userAvgDurations = [];
+    userSessions.forEach((durations, userId) => {
+      const total = durations.reduce((sum, duration) => sum + duration, 0);
+      const avg = total / durations.length;
+      userAvgDurations.push({ userId, avgDuration: avg, sessions: durations.length });
+    });
+    
+    // Sort by average duration and take top 5
+    const topUsersByDuration = userAvgDurations
+      .sort((a, b) => b.avgDuration - a.avgDuration)
+      .slice(0, 5);
+    
     // Return dashboard HTML
     return res.status(200).send(`
       <!DOCTYPE html>
@@ -153,6 +276,17 @@ module.exports = async (req, res) => {
                 grid-template-columns: 1fr;
               }
             }
+            .highlight-metric {
+              font-size: 24px;
+              font-weight: 700;
+              color: #4a5568;
+              margin: 5px 0;
+            }
+            .key-metric {
+              background-color: #ebf8ff;
+              border-left: 4px solid #4299e1;
+              padding-left: 16px;
+            }
           </style>
         </head>
         <body>
@@ -228,6 +362,52 @@ module.exports = async (req, res) => {
                     <td>${f.count}</td>
                   </tr>
                 `).join('') : '<tr><td colspan="3">No feedback data</td></tr>'}
+              </table>
+            </div>
+            
+            <!-- Weekly Retention Rate -->
+            <div class="card key-metric">
+              <h2>Weekly User Retention</h2>
+              <div class="metric">${weeklyRetentionRate.toFixed(1)}%</div>
+              <div class="metric-description">
+                ${usersWithConsecutiveWeeks} out of ${totalUsersWithMultipleWeeks} users return weekly
+              </div>
+            </div>
+            
+            <!-- Study Sets Per User -->
+            <div class="card key-metric">
+              <h2>Study Sets Per User</h2>
+              <div class="metric">${studySetsPerUser.toFixed(1)}</div>
+              <div class="metric-description">
+                ${totalStudySets} study sets created by ${uniqueUserCount} users
+              </div>
+            </div>
+            
+            <!-- Session Duration -->
+            <div class="card key-metric">
+              <h2>Average Session Duration</h2>
+              <div class="metric">${(avgSessionDuration / 60).toFixed(1)} min</div>
+              <div class="metric-description">
+                Based on ${sessionCount} completed sessions
+              </div>
+            </div>
+            
+            <!-- Top Users by Session Duration -->
+            <div class="card">
+              <h2>Top Users by Session Time</h2>
+              <table>
+                <tr>
+                  <th>User ID</th>
+                  <th>Avg. Duration</th>
+                  <th>Sessions</th>
+                </tr>
+                ${topUsersByDuration.map(user => `
+                  <tr>
+                    <td>${user.userId.substring(0, 8)}...</td>
+                    <td>${(user.avgDuration / 60).toFixed(1)} min</td>
+                    <td>${user.sessions}</td>
+                  </tr>
+                `).join('')}
               </table>
             </div>
           </div>
